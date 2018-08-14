@@ -3,6 +3,7 @@ package com.coymaple.bootdemo.service;
 import java.util.List;
 
 import com.coymaple.bootdemo.domain.Student;
+import com.github.pagehelper.PageInfo;
 
 public interface StudentService {
 	//增
@@ -12,7 +13,8 @@ public interface StudentService {
 	//改
 	public int modifyStudent(Student student);
 	//查
-	public List<Student> findAllStudent(Integer pages,Integer size);
-	public Student findOneStudent(Integer id);
-	public List<Student> findStudentByName(String name);
+	public List<Student> findAllStudent();
+	public Student findOneStudentById(Integer id);
+	public PageInfo<Student> findStudentByName(String name,int pageNum,int pageSize);
+	public PageInfo<Student> findStudentHavePage(int pageNum,int pageSize);
 }

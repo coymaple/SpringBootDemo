@@ -3,18 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <title>Student</title>
+<link type="text/css" rel="stylesheet" href="/css/thirdparty/bootstrap3.1.1/bootstrap.min.css">
 <script type="text/javascript" src="../js/thirdparty/jquery-1.8.3.js"></script>
 <script type="text/javascript" src="../js/common/common.js"></script>
+<script type="text/javascript" src="/js/thirdparty/jqPaginator.js"></script>
 <script type="text/javascript">
-<!--
-$(function(){
+//表格初始化函数
+function initStudentTable(url,async){
 	$.ajax({
-		url: '/student/student',
+		url : url,
+		async : async,
 		type : 'get',
 		success : (result)=>{
 			let data = result.data;
 			if(data){
-				$.each(data,(i,n)=>{
+				$.jqPaginator('#pagination2',{
+					totalPages : data.pages,
+					visiblePages : 10<data.pages?10:data.pages,
+					currentPages : data.pageNum,
+					prev : '<li class="prev"><a href="javascript:;">上一页</a></li>',
+					next : '<li class="next"><a href="javascript:;">下一页</a></li>',
+					page : '<li class="prev"><a href="javascript:;">{{page}}</a></li>',
+					onPageChange : (pageNum,type)=>{
+						if(type == 'change'){
+							changePageData(pageNum);
+						}
+					}
+				});
+				$('#studentList').find('tbody').empty();
+				$.each(data.list,(i,n)=>{
+					let $row = $('#rowTemplates').clone();
+					dataBindToElement($row,n);
+					$('#studentList').find('tbody').append($row);
+				});
+			}
+		}
+	})
+}
+
+//分页切换页面用到的函数
+function changePageData(pageNum,async){
+	$.ajax({
+		url: '/student/student',
+		async : async,
+		type : 'get',
+		data : {"pageNum":pageNum},
+		success : (result)=>{
+			let data = result.data;
+			if(data){
+				$('#pagination2').jqPaginator('option',{
+					currentPage : data.pageNum
+				});
+				$('#studentList').find('tbody').empty();
+				$.each(data.list,(i,n)=>{
 					let $row = $('#rowTemplates').clone();
 					dataBindToElement($row,n);
 					$('#studentList').find('tbody').append($row);
@@ -22,11 +63,76 @@ $(function(){
 			}
 		}
 	});
+}
+
+//定义按下“搜索”按钮事件处理方法
+function searchByName(){
+	let name = $('#input_search').val();
+	let url = '/student/student?name=' + name;
+	initStudentTable(url);	
+}
+//实现批量删除功能
+//function (){}
+
+//实现单个删除功能
+function removeStudent(){
+	let value = $(this).parent().parent().find('input[identity="id"]');
+	console.log(value.val());
+}	
+$(function(){
+	
+	$.ajax({
+		url : '/student/student',
+		async : false,
+		type : 'get',
+		success : (result)=>{
+			let data = result.data;
+			if(data){
+				$.jqPaginator('#pagination2',{
+					totalPages : data.pages,
+					visiblePages : 10<data.pages?10:data.pages,
+					currentPages : data.pageNum,
+					prev : '<li class="prev"><a href="javascript:;">上一页</a></li>',
+					next : '<li class="next"><a href="javascript:;">下一页</a></li>',
+					page : '<li class="prev"><a href="javascript:;">{{page}}</a></li>',
+					onPageChange : (pageNum,type)=>{
+						if(type == 'change'){
+							changePageData(pageNum);
+						}
+					}
+				});
+				$('#studentList').find('tbody').empty();
+				$.each(data.list,(i,n)=>{
+					let $row = $('#rowTemplates').clone();
+					dataBindToElement($row,n);
+					$('#studentList').find('tbody').append($row);
+				});
+			}
+		}
+	})
+	
+	initStudentTable('/student/student',false); //页面加载时进行的操作，初始化一张表。
+	$('#btn_search').on('click',searchByName); //“搜索”按钮的点击事件
+	
+	//查看学生信息详情
+	$('input[name="delete"]').on('click',()=>{
+		//获取学生id
+		let id = $(this).siblings('[identity="id"]').val();
+		console.log(id);
+	});
+	
+	
+	
+
+	
 })
 </script>
 </head>
 
 <body>
+<input type="text" id="input_search" placeholder="请输入姓名进行搜索">
+<input type="button" id="btn_search" value="搜索">
+<input type="button" value="批量删除">
 <table id="studentList">
 	<thead>
 		<tr>
@@ -34,10 +140,13 @@ $(function(){
 			<th>性别</th>
 			<th>电话</th>
 			<th>家庭住址</th>
+			<th>操作</th>
 		</tr>
 	</thead>
 	<tbody></tbody>
 </table>
+<ul class="pagination" id="pagination2"></ul>
+
 <div class="templates">
 <table id="templates" style="display: none;">
 	<tr id="rowTemplates">
@@ -46,6 +155,7 @@ $(function(){
 		<td identity="telephone"></td>
 		<td identity="address"></td>
 		<td>
+			<input name="id" type="hidden" identity="id">
 			<input name="details" type="button" value="查看详情">
 			<input name="edit" type="button" value="编辑">
 			<input name="delete" type="button" value="删除">

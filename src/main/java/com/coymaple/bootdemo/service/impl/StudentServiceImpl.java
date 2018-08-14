@@ -7,8 +7,11 @@ import org.springframework.stereotype.Service;
 
 import com.coymaple.bootdemo.domain.Student;
 import com.coymaple.bootdemo.domain.StudentExample;
+import com.coymaple.bootdemo.domain.StudentExample.Criteria;
 import com.coymaple.bootdemo.mapper.StudentMapper;
 import com.coymaple.bootdemo.service.StudentService;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 
 @Service
 public class StudentServiceImpl implements StudentService{
@@ -24,8 +27,7 @@ public class StudentServiceImpl implements StudentService{
 
 	@Override
 	public int removeStudent(Integer id) {
-		// TODO Auto-generated method stub
-		return 0;
+		return studentMapper.deleteByPrimaryKey(id);
 	}
 
 	@Override
@@ -35,22 +37,35 @@ public class StudentServiceImpl implements StudentService{
 	}
 
 	@Override
-	public List<Student> findAllStudent(Integer pages,Integer size) {
-		
+	public Student findOneStudentById(Integer id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PageInfo<Student> findStudentByName(String name,int pageNum,int pageSize) {
+		StudentExample example = new StudentExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andNameLike(name);
+		PageHelper.startPage(pageNum, pageSize);
+		List<Student> students = studentMapper.selectByExample(example);
+		PageInfo<Student> pageinfo = new PageInfo<>(students);
+		return pageinfo;
+	}
+
+	@Override
+	public List<Student> findAllStudent() {
 		StudentExample example = new StudentExample();
 		return studentMapper.selectByExample(example);
 	}
 
 	@Override
-	public Student findOneStudent(Integer id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<Student> findStudentByName(String name) {
-		// TODO Auto-generated method stub
-		return null;
+	public PageInfo<Student> findStudentHavePage(int pageNum, int pageSize) {
+		StudentExample example = new StudentExample();
+		PageHelper.startPage(pageNum, pageSize);
+		List<Student> students = studentMapper.selectByExample(example);
+		PageInfo<Student> pageinfo = new PageInfo<>(students);
+		return pageinfo;
 	}
 
 }
